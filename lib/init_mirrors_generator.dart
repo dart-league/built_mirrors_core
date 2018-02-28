@@ -33,10 +33,15 @@ class InitMirrorsGenerator extends Generator {
   initClassMirrors({
   ${_classMirrors.join(',\n')}
   });
-  initFunctionMirrors({
-  ${_functionMirrors.join(',\n')}
-  });
-  getClassMirrorFromGenericInstance = (instance) => ${_getClassMirrorFromInstances.join()} null;
+  ${_functionMirrors.isNotEmpty
+      ? """initFunctionMirrors({
+        ${_functionMirrors.join(',\n')}
+        });"""
+      : ''}
+  
+  ${_getClassMirrorFromInstances.isNotEmpty
+          ? 'getClassMirrorFromGenericInstance = (instance) => ${_getClassMirrorFromInstances.join()} null;'
+          : ''}
 }''';
     }
 
