@@ -12,8 +12,13 @@ void initClassMirrors(Map<Type, ClassMirror> classMirrors) {
 /// Returns the [ClassMirror] corresponding to the [type]
 ClassMirror reflectType(Type type) => _classMirrors[type];
 
+typedef ClassMirror GetClassMirrorFromGenericInstance(instance);
+GetClassMirrorFromGenericInstance getClassMirrorFromGenericInstance = (_) => null;
+
 /// Returns the [ClassMirror] corresponding to the runtime type of the [instance]
-ClassMirror reflect(instance) => _classMirrors[instance.runtimeType];
+ClassMirror reflect(instance) => _classMirrors.putIfAbsent(instance.runtimeType, () =>
+  getClassMirrorFromGenericInstance(instance)
+);
 
 /// Container map of Function-FunctionMirror combination
 Map<Function, FunctionMirror> _functionMirrors = {};

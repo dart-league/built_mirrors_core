@@ -14,11 +14,14 @@ class InitMirrorsGenerator extends Generator {
 
   static Set<String> _functionMirrors;
 
+  static Set<String> _getClassMirrorFromInstances;
+
   @override
   Future<String> generate(LibraryReader libraryReader, BuildStep buildStep) async {
     libraryElements = new Set();
     _classMirrors = new Set();
     _functionMirrors = new Set();
+    _getClassMirrorFromInstances = new Set();
     var element = libraryReader.element;
     if (element.entryPoint != null && element.name != '') {
       _mapLibraries(element);
@@ -33,6 +36,7 @@ class InitMirrorsGenerator extends Generator {
   initFunctionMirrors({
   ${_functionMirrors.join(',\n')}
   });
+  getClassMirrorFromGenericInstance = (instance) => ${_getClassMirrorFromInstances.join()} null;
 }''';
     }
 
@@ -54,8 +58,11 @@ class InitMirrorsGenerator extends Generator {
           _classMirrors.add('${enum_.name}: ${enum_.name}ClassMirror');
       });
       unit.types.forEach((type) {
-        if (type.metadata.any(_isReflectable))
+        if (type.metadata.any(_isReflectable)) {
           _classMirrors.add('${type.name}: ${type.name}ClassMirror');
+          if (type.typeParameters.isNotEmpty)
+            _getClassMirrorFromInstances.add('instance is ${type.name} ? ${type.name}ClassMirror : ');
+        }
       });
       unit.functions.forEach((function) {
         if (function.metadata.any(_isReflectable))

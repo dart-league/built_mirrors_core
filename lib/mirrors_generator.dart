@@ -159,7 +159,7 @@ String _renderAnnotationParameters(ElementAnnotation annotation) {
 
 String _renderParameterValue(ParameterElement parameter, ElementAnnotation annotation) {
   var thingy = new ConstantReader(annotation.computeConstantValue()).read(parameter.name);
-  
+
   return (thingy?.isNull != false) ? 'null' : _renderValue(thingy.objectValue);
 }
 
@@ -189,9 +189,11 @@ String _renderValue(DartObject field) {
 String _renderType(DartType type) =>
     type is ParameterizedType && type.typeArguments.isNotEmpty
         ? 'const [${type.name}, ${_renderTypes(type.typeArguments)}]'
-        : type.name != 'void'
-          ? type.name
-          : 'null';
+        : type is TypeParameterType
+          ? 'dynamic'
+          : type.name != 'void'
+            ? type.name
+            : 'null';
 
 String _renderTypes(List<DartType> types) =>
     types.length > 1
