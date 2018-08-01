@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:analyzer/analyzer.dart';
 import 'package:analyzer/dart/constant/value.dart';
 import 'package:analyzer/dart/element/element.dart';
 import 'package:analyzer/dart/element/type.dart';
@@ -90,7 +89,7 @@ String _combine(String pv, String e) =>
 String _renderConstructorParametersCall(ConstructorElement c) {
   var i = 0;
   return c.parameters.map((p) =>
-  p.parameterKind != ParameterKind.NAMED
+  p.isPositional
       ? 'positionalParams[${i++}]'
       : "${p.name}: namedParams['${p.name}']"
   ).join(',');
@@ -109,13 +108,13 @@ String _renderFunction(ExecutableElement f) =>
         ')';
 
 String _renderNamedParameters(List<ParameterElement> params) {
-  var result = params.where((p) => p.parameterKind == ParameterKind.NAMED)
+  var result = params.where((p) => p.isNamed)
       .map((p) => "'${p.name}': ${_renderParameter(p)}").join(',');
   return result.isEmpty ? '' : 'namedParameters: const {${result}},';
 }
 
 String _renderPositionalParameters(List<ParameterElement> params) {
-  var result = params.where((p) => p.parameterKind != ParameterKind.NAMED).map(_renderParameter).join(',');
+  var result = params.where((p) => p.isPositional).map(_renderParameter).join(',');
   return result.isEmpty ? '' : 'positionalParameters: const [$result],';
 }
 
@@ -123,8 +122,8 @@ String _renderParameter(ParameterElement p) =>
     "const DeclarationMirror("
         "name: '${p.name}',"
         'type: ${_renderType(p.type)}'
-        '${p.parameterKind == ParameterKind.REQUIRED ? ', isRequired: true' : ''}'
-        '${p.parameterKind == ParameterKind.NAMED ? ', isNamed: true' : ''}'
+        '${p.isNotOptional ? ', isRequired: true' : ''}'
+        '${p.isNamed ? ', isNamed: true' : ''}'
         '${p.metadata.isEmpty ? '' : ','} ${_renderMetadata(p.metadata)}'
         ')';
 
@@ -152,7 +151,7 @@ String _renderMetadata(List<ElementAnnotation> metadata) {
 
 String _renderAnnotationParameters(ElementAnnotation annotation) {
   return (annotation.element as ConstructorElement).parameters.map((p) =>
-  p.parameterKind == ParameterKind.NAMED
+  p.isNamed
       ? '${p.name}: ${_renderParameterValue(p, annotation)}'
       : _renderParameterValue(p, annotation)).toString();
 }
