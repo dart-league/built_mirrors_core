@@ -1,3 +1,7 @@
+library built_mirrors_core;
+
+part 'annotations.dart';
+
 /// Container map of [Type]-[ClassMirror] combination
 Map<Type, ClassMirror> _classMirrors = {};
 
@@ -33,14 +37,6 @@ void initFunctionMirrors(Map<Function, FunctionMirror> classMirrors) {
 
 /// Returns the [FunctionMirror] corresponding to the [function]
 FunctionMirror reflectFunction(Function function) => _functionMirrors[function];
-
-/// Annotation needed to generate [ClassMirror] for every class
-const Reflectable reflectable = const Reflectable();
-
-/// Annotation needed to generate [ClassMirror] for every class
-class Reflectable {
-  const Reflectable();
-}
 
 /// Class used to make annotations listed on [ClassMirror]
 abstract class Annotation {
