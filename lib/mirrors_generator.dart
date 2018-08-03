@@ -59,10 +59,14 @@ const ${className}ClassMirror = const ClassMirror(
             "\$call: _${className}_${c.name}_Constructor)").join(',')}
           }''',
         _renderMetadata(element.metadata),
-        fields.where((x) => !x.isStatic).isNotEmpty ? 'fields: const {${fields.where((x) => !x.isStatic).map(_renderFields).join(',')}}' : '',
-        getters.where((x) => !x.isStatic).isNotEmpty ? 'getters: const [${getters.where((x) => !x.isStatic).map((g) => "'${g.name}'").join(',')}]' : '',
+        fields.where((x) => !x.isStatic).isNotEmpty
+            ? 'fields: const {${fields.where((x) => !x.isStatic).map(_renderFields).join(',')}}'
+            : '',
+        getters.where((x) => !x.isStatic).isNotEmpty
+            ? 'getters: const [${getters.where((x) => !x.isStatic).map((g) => "'${_getSerializedNameFromAccessor(g)}'").join(',')}]'
+            : '',
         setters.where((x) => !x.isStatic).isNotEmpty
-            ? 'setters: const [${setters.where((x) => !x.isStatic).map((s) => "'${s.name.substring(0, s.name.length - 1)}'").join(',')}]'
+            ? 'setters: const [${setters.where((x) => !x.isStatic).map((s) => "'${_getSerializedNameFromAccessor(s)}'").join(',')}]'
             : '',
         methods.where((x) => !x.isStatic).isNotEmpty ? 'methods: const {${methods.where((x) => !x.isStatic).map(_renderMethods).join(',')}}' : '',
         element.isAbstract ? 'isAbstract: true' : '',
@@ -120,7 +124,7 @@ String _renderPositionalParameters(List<ParameterElement> params) {
 
 String _renderParameter(ParameterElement p) =>
     "const DeclarationMirror("
-        "name: '${p.name}',"
+        "name: '${_getSerializedNameFromParameter(p)}',"
         'type: ${_renderType(p.type)}'
         '${p.isNotOptional ? ', isRequired: true' : ''}'
         '${p.isNamed ? ', isNamed: true' : ''}'
@@ -129,14 +133,35 @@ String _renderParameter(ParameterElement p) =>
 
 String _renderFieldsDeclarations(FieldElement e) =>
     "const \$\$${e.enclosingElement.name}_fields_${e.name} = const DeclarationMirror("
-        "name: '${e.name}',"
+        "name: '${_getSerializedNameFromField(e)}',"
         'type: ${_renderType(e.type)}'
         '${e.isFinal ? ', isFinal: true' : ''}'
         '${e.metadata.isEmpty ? '' : ','} ${_renderMetadata(e.metadata)}'
         ');';
 
 String _renderFields(VariableElement e) =>
-    "'${e.name}': \$\$${e.enclosingElement.name}_fields_${e.name}";
+    "'${_getSerializedNameFromField(e)}': \$\$${e.enclosingElement.name}_fields_${e.name}";
+
+String _getSerializedNameFromField(FieldElement f) {
+  return f.metadata
+      .firstWhere((a) => (a.constantValue.type.element as ClassElement).name == 'SerializedName',
+      orElse: () => null)
+      ?.constantValue
+      ?.getField('name')
+      ?.toStringValue() ??
+      f.displayName;
+}
+
+String _getSerializedNameFromAccessor(PropertyAccessorElement a) =>
+    _getSerializedNameFromField((a.enclosingElement as ClassElement).getField(a.displayName));
+
+String _getSerializedNameFromParameter(ParameterElement p) {
+  var field;
+  if (p.enclosingElement is ConstructorElement) {
+    field = (p.enclosingElement.enclosingElement as ClassElement).getField(p.displayName);
+  }
+  return field == null ? p.displayName : _getSerializedNameFromField(field);
+}
 
 String _renderMetadata(List<ElementAnnotation> metadata) {
   var annotations = metadata.where((a) =>
