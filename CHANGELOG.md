@@ -1,3 +1,8 @@
+# 0.10.1
+
+- upgrade `analyzer` to version `^0.33.0`
+- upgrade `build_runner` to version `^1.0.0`
+
 # 0.10.0
 
 - add `SerializedName` annotation, this annotation will be compile time only.
