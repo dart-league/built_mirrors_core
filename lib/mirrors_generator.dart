@@ -70,8 +70,8 @@ const ${className}ClassMirror = const ClassMirror(
             : '',
         methods.where((x) => !x.isStatic).isNotEmpty ? 'methods: const {${methods.where((x) => !x.isStatic).map(_renderMethods).join(',')}}' : '',
         element.isAbstract ? 'isAbstract: true' : '',
-        element.supertype.name != 'Object' ? 'superclass: ${element.supertype}' : '',
-        element.interfaces.isNotEmpty ? 'superinterfaces: const [${element.interfaces.join(',')}]' : ''
+        element.supertype.name != 'Object' ? 'superclass: ${element.supertype.name}' : '',
+        element.interfaces.isNotEmpty ? 'superinterfaces: const [${element.interfaces.map((i) => i.name).join(',')}]' : ''
       ].fold('', _combine)}
 );''';
     }

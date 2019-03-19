@@ -1,3 +1,7 @@
+# 0.10.3
+
+- Fix generics superclass and superinterfaces to use class name instead class with types
+
 # 0.10.2
 
 - upgrade `analyzer` to version `^0.34.0`
