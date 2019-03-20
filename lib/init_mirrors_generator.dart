@@ -14,14 +14,14 @@ class InitMirrorsGenerator extends Generator {
 
   static Set<String> _functionMirrors;
 
-  static Set<String> _getClassMirrorFromInstances;
+  static List<_MirrorFromInstance> _getClassMirrorFromInstances;
 
   @override
   Future<String> generate(LibraryReader libraryReader, BuildStep buildStep) async {
     libraryElements = new Set();
     _classMirrors = new Set();
     _functionMirrors = new Set();
-    _getClassMirrorFromInstances = new Set();
+    _getClassMirrorFromInstances = [];
     var element = libraryReader.element;
     if (element.entryPoint != null && element.name != '') {
       _mapLibraries(element);
@@ -40,7 +40,9 @@ class InitMirrorsGenerator extends Generator {
       : ''}
   
   ${_getClassMirrorFromInstances.isNotEmpty
-          ? 'getClassMirrorFromGenericInstance = (instance) => ${_getClassMirrorFromInstances.join()} null;'
+          ? 'getClassMirrorFromGenericInstance = (instance) => ${
+          (_getClassMirrorFromInstances..sort((m1, m2) => m2.extensionLevel.compareTo(m1.extensionLevel)))
+              .map((mfi) => 'instance is ${mfi.className} ? ${mfi.className}ClassMirror :').join('\n')} null;'
           : ''}
 }''';
     }
@@ -66,7 +68,8 @@ class InitMirrorsGenerator extends Generator {
         if (type.metadata.any(_isReflectable)) {
           _classMirrors.add('${type.name}: ${type.name}ClassMirror');
           if (type.typeParameters.isNotEmpty)
-            _getClassMirrorFromInstances.add('instance is ${type.name} ? ${type.name}ClassMirror : ');
+//            _getClassMirrorFromInstances.add('instance is ${type.name} ? ${type.name}ClassMirror : ');
+            _getClassMirrorFromInstances.add(_MirrorFromInstance(type.name, type.allSupertypes.length));
         }
       });
       unit.functions.forEach((function) {
@@ -81,4 +84,12 @@ class InitMirrorsGenerator extends Generator {
     return acv != null && (acv.type.name == 'Reflectable'
         || (acv.type.element as ClassElement).allSupertypes.any((st) => st.name == 'Reflectable'));
   }
+}
+
+class _MirrorFromInstance {
+  String className;
+
+  int extensionLevel;
+
+  _MirrorFromInstance(this.className, this.extensionLevel);
 }

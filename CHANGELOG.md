@@ -1,3 +1,7 @@
+# 0.10.4
+
+- Fix order of Generic Instances mirror generator
+
 # 0.10.3
 
 - Fix generics superclass and superinterfaces to use class name instead class with types
