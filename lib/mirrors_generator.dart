@@ -144,7 +144,7 @@ String _renderFields(VariableElement e) =>
 
 String _getSerializedNameFromField(FieldElement f) {
   return f.metadata
-      .firstWhere((a) => (a.constantValue.type.element as ClassElement).name == 'SerializedName',
+      .firstWhere((a) => (a.computeConstantValue().type.element as ClassElement).name == 'SerializedName',
       orElse: () => null)
       ?.constantValue
       ?.getField('name')
@@ -164,8 +164,7 @@ String _getSerializedNameFromParameter(ParameterElement p) {
 }
 
 String _renderMetadata(List<ElementAnnotation> metadata) {
-  var annotations = metadata.where((a) =>
-      (a.constantValue.type.element as ClassElement).allSupertypes.any((st) => st.name == 'Annotation'));
+  var annotations = metadata.where((a) => (a.computeConstantValue().type.element as ClassElement).allSupertypes.any((st) => st.name == 'Annotation'));
   return annotations.isNotEmpty
       ? "annotations: const [${annotations.map((a) =>
   a.element is ConstructorElement
